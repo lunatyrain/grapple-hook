@@ -6,7 +6,7 @@ description: Grappling hook item with custom models, no particles
 commands:
   grapplehook:
     description: Give yourself a grapple hook or reload the config
-    usage: /grapplehook <give [player]|reload>
+    usage: /grapplehook <give [player]|cooldown <seconds>|reload>
     aliases: [grapple, gh]
     permission: grapplehook.give
 permissions:

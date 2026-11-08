@@ -146,7 +146,7 @@ public final class GrappleHookPlugin extends JavaPlugin implements Listener, Tab
         boolean hit = r != null && r.getHitPosition() != null && r.getHitBlock() != null;
         Vector anchor = hit ? r.getHitPosition() : eye.toVector().add(look.clone().multiply(range));
 
-        int cd = (int) Math.round(20 * getConfig().getDouble(hit ? "cooldown-seconds" : "miss-cooldown-seconds", 8.0));
+        int cd = (int) Math.round(20 * getConfig().getDouble(hit ? "cooldown-seconds" : "miss-cooldown-seconds", 30.0));
         if (cd > 0) p.setCooldown(item, cd);
 
         boolean left = (hand == EquipmentSlot.HAND) == (p.getMainHand() == MainHand.LEFT);
@@ -186,13 +186,35 @@ public final class GrappleHookPlugin extends JavaPlugin implements Listener, Tab
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(Component.text("/" + label + " <give [player]|reload>", NamedTextColor.YELLOW));
+            sender.sendMessage(Component.text("/" + label + " <give [player]|cooldown <seconds>|reload>", NamedTextColor.YELLOW));
             return true;
         }
         switch (args[0].toLowerCase()) {
             case "reload" -> {
                 reloadConfig();
                 sender.sendMessage(Component.text("GrappleHook config reloaded.", NamedTextColor.GREEN));
+            }
+            case "cooldown" -> {
+                if (args.length < 2) {
+                    sender.sendMessage(Component.text("Cooldown is " + getConfig().getDouble("cooldown-seconds", 30.0)
+                            + "s (miss: " + getConfig().getDouble("miss-cooldown-seconds", 30.0) + "s). Use /" + label
+                            + " cooldown <seconds> [miss-seconds]", NamedTextColor.YELLOW));
+                    return true;
+                }
+                try {
+                    double hitCd = Double.parseDouble(args[1]);
+                    if (hitCd < 0) throw new NumberFormatException();
+                    getConfig().set("cooldown-seconds", hitCd);
+                    if (args.length >= 3) {
+                        double missCd = Double.parseDouble(args[2]);
+                        if (missCd < 0) throw new NumberFormatException();
+                        getConfig().set("miss-cooldown-seconds", missCd);
+                    }
+                    saveConfig();
+                    sender.sendMessage(Component.text("Grapple cooldown set to " + hitCd + "s.", NamedTextColor.GREEN));
+                } catch (NumberFormatException ex) {
+                    sender.sendMessage(Component.text("Give a number of seconds, e.g. /" + label + " cooldown 5", NamedTextColor.RED));
+                }
             }
             case "give" -> {
                 Player target;
@@ -214,7 +236,7 @@ public final class GrappleHookPlugin extends JavaPlugin implements Listener, Tab
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
-        if (args.length == 1) return List.of("give", "reload");
+        if (args.length == 1) return List.of("give", "cooldown", "reload");
         if (args.length == 2 && args[0].equalsIgnoreCase("give"))
             return getServer().getOnlinePlayers().stream().map(Player::getName).toList();
         return List.of();

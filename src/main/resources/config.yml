@@ -1,7 +1,7 @@
 # All speeds are blocks per tick (20 ticks = 1 second)
 range: 45.0                 # how far the hook can be thrown
-cooldown-seconds: 8.0       # cooldown after a hook that hit something
-miss-cooldown-seconds: 1.5  # cooldown after a miss
+cooldown-seconds: 30.0      # cooldown after a hook that hit something
+miss-cooldown-seconds: 30.0  # cooldown after a miss
 throw-speed: 4.0            # how fast the hook flies out
 pull-speed: 0.95            # how fast you are pulled
 pull-smoothing: 0.35        # 0-1, higher = snappier pull
