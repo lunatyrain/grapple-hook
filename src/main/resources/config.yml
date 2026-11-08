@@ -1,0 +1,13 @@
+# All speeds are blocks per tick (20 ticks = 1 second)
+range: 45.0                 # how far the hook can be thrown
+cooldown-seconds: 8.0       # cooldown after a hook that hit something
+miss-cooldown-seconds: 1.5  # cooldown after a miss
+throw-speed: 4.0            # how fast the hook flies out
+pull-speed: 0.95            # how fast you are pulled
+pull-smoothing: 0.35        # 0-1, higher = snappier pull
+arrive-distance: 2.0        # you let go when this close to the hook
+max-pull-ticks: 70          # safety limit for one pull
+release-boost: 0.30         # small upward hop when you arrive (helps you climb ledges)
+sneak-to-release: true      # sneak or right-click again to let go early
+no-fall-seconds: 3.0        # fall damage immunity after a grapple
+sounds: true
