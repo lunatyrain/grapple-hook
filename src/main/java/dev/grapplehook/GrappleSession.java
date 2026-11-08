@@ -23,6 +23,8 @@ final class GrappleSession {
     private final World world;
     private final Vector anchor;        // where the hook hit (or the max-range point on a miss)
     private final boolean hit;
+    private final boolean leftSide;     // which hand the rope comes from
+    private final double headScale;
     private final Block hitBlock;
 
     private final double throwSpeed, pullSpeed, smoothing, arrive, boost;
@@ -39,14 +41,16 @@ final class GrappleSession {
     private int pullTicks, stuckTicks;
     private double lastDist = Double.MAX_VALUE;
 
-    GrappleSession(GrappleHookPlugin plugin, Player player, Vector anchor, boolean hit, Block hitBlock) {
+    GrappleSession(GrappleHookPlugin plugin, Player player, Vector anchor, boolean hit, Block hitBlock, boolean leftSide) {
         this.plugin = plugin;
         this.player = player;
         this.world = player.getWorld();
         this.anchor = anchor;
         this.hit = hit;
         this.hitBlock = hitBlock;
+        this.leftSide = leftSide;
         var c = plugin.getConfig();
+        headScale = c.getDouble("hook-scale", 0.8);
         throwSpeed = c.getDouble("throw-speed", 4.0);
         pullSpeed = c.getDouble("pull-speed", 0.95);
         smoothing = Math.min(1.0, Math.max(0.05, c.getDouble("pull-smoothing", 0.35)));
@@ -63,10 +67,12 @@ final class GrappleSession {
         dir = anchor.clone().subtract(origin);
         if (dir.lengthSquared() < 1.0e-6) dir = player.getEyeLocation().getDirection();
         dir.normalize();
-        hookTarget = anchor.clone().subtract(dir.clone().multiply(hit ? 0.35 : 0.0));
+        hookTarget = anchor.clone().subtract(dir.clone().multiply(hit ? 0.35 * headScale : 0.0));
 
         head = spawnDisplay("hook_head", hookPos);
         rope = spawnDisplay("rope", hookPos);
+        float hs = (float) headScale;
+        head.setTransformation(new Transformation(new Vector3f(), new AxisAngle4f(), new Vector3f(hs, hs, hs), new AxisAngle4f()));
         updateVisuals(origin);
         play(Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 1.4f);
         plugin.setHidden(player, true);   // claw leaves the launcher
@@ -167,14 +173,15 @@ final class GrappleSession {
 
     // ---------------------------------------------------------------- visuals
 
-    /** Roughly where the player's right hand is. */
+    /** Roughly where the hand holding the hook is (low and to the side so it stays out of first person view). */
     private Vector hand() {
         Location l = player.getLocation();
         double yaw = Math.toRadians(l.getYaw());
         Vector forward = new Vector(-Math.sin(yaw), 0, Math.cos(yaw));
         Vector right = new Vector(-Math.cos(yaw), 0, -Math.sin(yaw));
-        double h = player.isSneaking() ? 1.0 : 1.25;
-        return l.toVector().add(new Vector(0, h, 0)).add(right.multiply(0.3)).add(forward.multiply(0.45));
+        double side = leftSide ? -0.45 : 0.45;
+        double h = player.isSneaking() ? 0.85 : 1.1;
+        return l.toVector().add(new Vector(0, h, 0)).add(right.multiply(side)).add(forward.multiply(0.5));
     }
 
     private ItemDisplay spawnDisplay(String model, Vector at) {
@@ -199,7 +206,7 @@ final class GrappleSession {
         place(head, hookPos, out);
 
         // rope: from the hand to the back of the hook, stretched along local Z
-        Vector ropeEnd = hookPos.clone().subtract(out.clone().multiply(0.45));
+        Vector ropeEnd = hookPos.clone().subtract(out.clone().multiply(0.45 * headScale));
         Vector span = ropeEnd.clone().subtract(origin);
         double len = span.length();
         if (len < 0.05) {

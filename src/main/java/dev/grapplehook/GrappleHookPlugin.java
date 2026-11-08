@@ -25,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.inventory.MainHand;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -109,7 +110,7 @@ public final class GrappleHookPlugin extends JavaPlugin implements Listener, Tab
             return;
         }
         if (p.hasCooldown(item)) return;
-        fire(p, item);
+        fire(p, item, e.getHand());
     }
 
     @EventHandler
@@ -136,7 +137,7 @@ public final class GrappleHookPlugin extends JavaPlugin implements Listener, Tab
 
     // ------------------------------------------------------------------- fire
 
-    private void fire(Player p, ItemStack item) {
+    private void fire(Player p, ItemStack item, EquipmentSlot hand) {
         double range = getConfig().getDouble("range", 45.0);
         Location eye = p.getEyeLocation();
         Vector look = eye.getDirection();
@@ -148,7 +149,8 @@ public final class GrappleHookPlugin extends JavaPlugin implements Listener, Tab
         int cd = (int) Math.round(20 * getConfig().getDouble(hit ? "cooldown-seconds" : "miss-cooldown-seconds", 8.0));
         if (cd > 0) p.setCooldown(item, cd);
 
-        GrappleSession s = new GrappleSession(this, p, anchor, hit, hit ? r.getHitBlock() : null);
+        boolean left = (hand == EquipmentSlot.HAND) == (p.getMainHand() == MainHand.LEFT);
+        GrappleSession s = new GrappleSession(this, p, anchor, hit, hit ? r.getHitBlock() : null, left);
         sessions.put(p.getUniqueId(), s);
         s.start();
     }

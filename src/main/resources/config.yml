@@ -11,3 +11,4 @@ release-boost: 0.30         # small upward hop when you arrive (helps you climb 
 sneak-to-release: true      # sneak or right-click again to let go early
 no-fall-seconds: 3.0        # fall damage immunity after a grapple
 sounds: true
+hook-scale: 0.8             # size of the thrown hook (1.0 = full size)
