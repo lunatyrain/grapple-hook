@@ -80,6 +80,7 @@ public final class GrappleHookPlugin extends JavaPlugin implements Listener, Tab
                         .decoration(TextDecoration.ITALIC, false),
                 Component.text("Sneak or right click again to let go.", NamedTextColor.DARK_GRAY)
                         .decoration(TextDecoration.ITALIC, false)));
+        m.setUnbreakable(true);
         m.getPersistentDataContainer().set(itemKey, PersistentDataType.BYTE, (byte) 1);
         item.setItemMeta(m);
         return item;
